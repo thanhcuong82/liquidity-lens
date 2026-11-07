@@ -1,0 +1,7 @@
+{
+  "appId": "com.thanhcuong82.liquiditylens",
+  "appName": "LiquidityLens",
+  "webDir": "www",
+  "android": { "allowMixedContent": false },
+  "server": { "androidScheme": "https" }
+}

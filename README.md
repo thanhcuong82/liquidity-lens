@@ -31,6 +31,15 @@ Repo → **Settings → Pages** → *Source: Deploy from a branch* → Branch **
 
 > Repo private: GitHub Pages cho repo private cần gói GitHub Pro. Nếu dùng gói Free, đổi repo sang Public, hoặc chạy trên máy như hướng dẫn dưới.
 
+## Ứng dụng Android (APK)
+Mỗi lần có code mới trên nhánh `main`, GitHub Actions tự build APK và đăng vào mục **Releases**.
+- Tải bản mới nhất: `https://github.com/thanhcuong82/liquidity-lens/releases/latest/download/LiquidityLens.apk`
+- Lần đầu cài: Android sẽ hỏi cho phép "cài ứng dụng không rõ nguồn gốc" từ trình duyệt/Files → cho phép.
+- Bản sau cài đè lên bản cũ (cùng khoá ký), không cần gỡ.
+- Build thủ công: tab **Actions** → *Build Android APK* → *Run workflow*.
+
+App Android dùng [Capacitor](https://capacitorjs.com): chính web app này được đóng gói chạy offline trong app, dữ liệu vẫn lấy trực tiếp từ Binance.
+
 ## Chạy trên máy
 Không cần cài đặt hay build. Chỉ cần một web server tĩnh:
 ```bash

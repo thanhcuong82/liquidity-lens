@@ -1,0 +1,65 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-apk
+  cancel-in-progress: true
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Install
+        run: npm ci
+
+      - name: Test analysis engine
+        run: npm test
+
+      - name: Copy web app into Android project
+        run: npm run android:sync
+
+      - name: Build APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon --stacktrace
+
+      - name: Rename APK
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk LiquidityLens.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: LiquidityLens-apk
+          path: LiquidityLens.apk
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: apk-${{ github.run_number }}
+          name: LiquidityLens APK ${{ github.run_number }}
+          body: |
+            Bản Android tự build từ commit ${{ github.sha }}.
+            Tải `LiquidityLens.apk` về điện thoại Android rồi mở để cài.
+          files: LiquidityLens.apk
+          make_latest: true

@@ -296,4 +296,6 @@ window.addEventListener('hashchange', () => {
   if (s && (s.toUpperCase() !== state.symbol || (tf && tf !== state.interval))) load(s.toUpperCase(), tf || state.interval);
 });
 
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+// Inside the Android app (Capacitor) files are bundled locally, so no service worker is needed.
+const isNativeApp = !!window.Capacitor?.isNativePlatform?.();
+if (!isNativeApp && 'serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});

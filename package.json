@@ -3,6 +3,20 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Liquidity zones for any Binance coin — PWA",
-  "scripts": { "test": "node --test test/*.test.mjs", "start": "python3 -m http.server 8080" }
+  "description": "Liquidity zones for any Binance coin — PWA + Android app",
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "start": "python3 -m http.server 8080",
+    "build:web": "node scripts/copy-web.mjs",
+    "android:sync": "npm run build:web && npx cap sync android",
+    "android:icons": "npx @capacitor/assets generate --android --iconBackgroundColor '#534AB7' --splashBackgroundColor '#0f1115'"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.6.0",
+    "@capacitor/core": "^8.6.0"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^4.0.0",
+    "@capacitor/cli": "^8.6.0"
+  }
 }
