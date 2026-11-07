@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>LiquidityLens — Vùng thanh khoản Binance</title>
+  <meta name="description" content="Xem vùng thanh khoản (đỉnh/đáy bằng, PDH/PDL, cú quét) cho mọi coin trên Binance.">
+  <meta name="theme-color" content="#0f1115" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f7f7f5" media="(prefers-color-scheme: light)">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand"><img src="icons/icon.svg" alt="" width="24" height="24"><span>LiquidityLens</span></div>
+    <form id="searchForm" class="search" autocomplete="off">
+      <input id="symbolInput" list="symbolList" placeholder="Nhập coin: ZEC, BTC, SOLUSDT…" spellcheck="false" autocapitalize="characters" aria-label="Mã coin">
+      <datalist id="symbolList"></datalist>
+      <button type="submit" class="primary">Xem</button>
+    </form>
+  </header>
+
+  <nav id="watchlist" class="watchlist" aria-label="Danh sách theo dõi"></nav>
+
+  <main class="layout">
+    <section class="chart-col">
+      <div class="quote">
+        <div>
+          <h1 id="symTitle">—</h1>
+          <div class="price-row"><span id="price" class="price">—</span><span id="change" class="change"></span><span id="live" class="live" title="Trạng thái kết nối"></span></div>
+        </div>
+        <div class="quote-actions">
+          <button id="starBtn" class="icon-btn" aria-label="Thêm vào danh sách theo dõi" title="Theo dõi">☆</button>
+        </div>
+      </div>
+      <div class="tf" role="group" aria-label="Khung thời gian">
+        <button data-tf="15m">15m</button><button data-tf="1h">1h</button><button data-tf="4h">4h</button><button data-tf="1d">1D</button><button data-tf="1w">1W</button>
+      </div>
+      <div class="legend">
+        <span><i class="sw above"></i>Thanh khoản phía trên</span>
+        <span><i class="sw below"></i>Thanh khoản phía dưới</span>
+        <span><i class="sw swept"></i>Đã bị quét</span>
+        <span><i class="mk">▼▲</i>Cú quét</span>
+      </div>
+      <div id="chart" class="chart"><div id="chartMsg" class="chart-msg">Đang tải…</div></div>
+    </section>
+
+    <aside class="side">
+      <section class="card">
+        <h2>Nhận định tự động</h2>
+        <ul id="summary" class="summary"></ul>
+      </section>
+
+      <section class="card">
+        <h2>Vùng thanh khoản</h2>
+        <h3 class="sub above-t">Phía trên giá</h3>
+        <div id="zonesAbove" class="zones"></div>
+        <h3 class="sub below-t">Phía dưới giá</h3>
+        <div id="zonesBelow" class="zones"></div>
+      </section>
+
+      <section class="card">
+        <h2>Cú quét gần đây</h2>
+        <div id="sweeps" class="sweeps"></div>
+      </section>
+
+      <details class="card">
+        <summary><h2>Cảnh báo</h2></summary>
+        <label class="row"><input type="checkbox" id="alNear"> Báo khi giá cách vùng thanh khoản dưới <input type="number" id="alNearPct" min="0.1" max="10" step="0.1" class="num"> %</label>
+        <label class="row"><input type="checkbox" id="alSweep"> Báo khi xuất hiện cú quét mới</label>
+        <p class="hint">Cảnh báo hoạt động khi app đang mở (kể cả ở tab nền). Lần đầu bật, trình duyệt sẽ hỏi quyền thông báo.</p>
+      </details>
+
+      <details class="card">
+        <summary><h2>Cài đặt phân tích</h2></summary>
+        <label class="row">Độ nhạy đỉnh/đáy (số nến mỗi bên) <input type="number" id="setFractal" min="1" max="10" step="1" class="num"></label>
+        <label class="row">Ngưỡng đỉnh/đáy bằng (%) <input type="number" id="setEqual" min="0.05" max="5" step="0.05" class="num"></label>
+        <label class="row">Gộp các mức gần nhau (%) <input type="number" id="setMerge" min="0.05" max="5" step="0.05" class="num"></label>
+        <button id="resetSettings" class="ghost">Khôi phục mặc định</button>
+      </details>
+
+      <p class="disclaimer">Công cụ phân tích tự động trên dữ liệu công khai của Binance. Không phải khuyến nghị đầu tư.</p>
+    </aside>
+  </main>
+
+  <div id="toasts" class="toasts" aria-live="polite"></div>
+
+  <script src="vendor/lightweight-charts.standalone.production.js"></script>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
