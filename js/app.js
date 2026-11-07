@@ -58,6 +58,7 @@ function drawAnalysis() {
   };
   r.zones.above.forEach(z => zoneLines(z, css('--above')));
   r.zones.below.forEach(z => zoneLines(z, css('--below')));
+  (r.zones.inside || []).filter(z => !z.onlyRound).forEach(z => zoneLines(z, css('--accent')));
   r.recentSweeps.slice(-4).forEach(e => add({ price: e.price, color: css('--swept'), lineStyle: LC.LineStyle.Dashed, title: 'đã quét', axisLabelVisible: false }));
 
   const markers = r.events
@@ -226,18 +227,49 @@ function resolve(input) {
   for (const q of QUOTES) if (state.symbols.has(s + q)) return s + q;
   return null;
 }
+// Typeahead (Android WebView ignores <datalist>, so we render our own list)
+const input = $('symbolInput'), box = $('suggest');
+let hl = -1, matches = [];
+function suggestions(q) {
+  q = q.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if (!q) return [];
+  const all = [...state.symbols];
+  if (!all.length) return [q.endsWith('USDT') ? q : q + 'USDT'];
+  const rank = s => (s === q + 'USDT' ? 0 : s.startsWith(q) && s.endsWith('USDT') ? 1 : s === q ? 2 : s.startsWith(q) ? 3 : 9);
+  return all.filter(s => s.startsWith(q)).sort((a, b) => rank(a) - rank(b) || a.length - b.length || a.localeCompare(b)).slice(0, 8);
+}
+function showSuggest() {
+  matches = suggestions(input.value); hl = matches.length ? 0 : -1;
+  if (!matches.length) { box.hidden = true; return; }
+  box.innerHTML = matches.map((s, i) => {
+    const q = QUOTES.find(q => s.endsWith(q) && s.length > q.length);
+    return `<button type="button" role="option" data-sym="${s}" class="${i === hl ? 'hl' : ''}"><span>${q ? s.slice(0, -q.length) : s}</span><span class="q">${q || ''}</span></button>`;
+  }).join('');
+  box.hidden = false;
+}
+function pick(sym) {
+  box.hidden = true; input.value = ''; input.blur();
+  load(sym, state.interval);
+}
+input.addEventListener('input', showSuggest);
+input.addEventListener('focus', showSuggest);
+input.addEventListener('keydown', e => {
+  if (box.hidden || !matches.length) return;
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    e.preventDefault(); hl = (hl + (e.key === 'ArrowDown' ? 1 : -1) + matches.length) % matches.length;
+    [...box.children].forEach((b, i) => b.classList.toggle('hl', i === hl));
+  } else if (e.key === 'Escape') box.hidden = true;
+});
+// pointerdown fires before the input loses focus, so the tap is never lost
+box.addEventListener('pointerdown', e => { const b = e.target.closest('[data-sym]'); if (b) { e.preventDefault(); pick(b.dataset.sym); } });
+input.addEventListener('blur', () => setTimeout(() => { box.hidden = true; }, 150));
 $('searchForm').addEventListener('submit', e => {
   e.preventDefault();
-  const sym = resolve($('symbolInput').value);
+  const sym = (!box.hidden && matches[hl]) || resolve(input.value);
   if (!sym) { toast('Không tìm thấy coin này trên Binance Spot'); return; }
-  $('symbolInput').value = ''; $('symbolInput').blur();
-  load(sym, state.interval);
+  pick(sym);
 });
-api.symbols().then(list => {
-  state.symbols = new Set(list);
-  const usdt = list.filter(s => s.endsWith('USDT')).sort();
-  $('symbolList').innerHTML = usdt.map(s => `<option value="${s}">`).join('');
-}).catch(() => {});
+api.symbols().then(list => { state.symbols = new Set(list); if (document.activeElement === input) showSuggest(); }).catch(() => {});
 
 document.querySelector('.tf').addEventListener('click', e => {
   const tf = e.target.closest('button')?.dataset.tf;

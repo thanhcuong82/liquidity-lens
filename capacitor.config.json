@@ -3,5 +3,8 @@
   "appName": "LiquidityLens",
   "webDir": "www",
   "android": { "allowMixedContent": false },
-  "server": { "androidScheme": "https" }
+  "server": { "androidScheme": "https" },
+  "plugins": {
+    "SystemBars": { "insetsHandling": "css" }
+  }
 }

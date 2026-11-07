@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { analyze, findSwings, levelStatus, roundLevels, roundStep } from '../js/analysis.js';
+import { analyze, findSwings, levelStatus, roundLevels, roundStep, mergeLevels } from '../js/analysis.js';
 
 const raw = JSON.parse(readFileSync(new URL('./zec-4h.json', import.meta.url)));
 const candles = raw.candles.map(([time, open, high, low, close]) => ({ time, open, high, low, close }));
@@ -64,4 +64,12 @@ test('levelStatus basics', () => {
   assert.deepEqual(levelStatus(c, 0, 10, 'high').status, 'swept');
   const c2 = [{high:10,low:5,close:8},{high:12,low:6,close:11}];
   assert.equal(levelStatus(c2, 0, 10, 'high').status, 'broken');
+});
+
+test('a ladder of levels 0.5% apart does not chain into one huge zone (BTC 15m bug)', () => {
+  const lv = [];
+  for (let p = 74888; p <= 77006; p *= 1.005) lv.push({ lo: p, hi: p, kind: 'swingLow', label: 'x' });
+  const zones = mergeLevels(lv, 0.8);
+  assert.ok(zones.length >= 2);
+  for (const z of zones) assert.ok((z.hi - z.lo) / z.lo * 100 <= 1.2 + 1e-9, `zone ${z.lo}-${z.hi} too wide`);
 });

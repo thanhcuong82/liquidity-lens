@@ -1,6 +1,6 @@
 // App-shell cache so the app opens instantly and installs as a PWA.
 // Market data is always fetched live from Binance, never cached.
-const CACHE = 'liquiditylens-v1';
+const CACHE = 'liquiditylens-v2';
 const SHELL = ['./', 'index.html', 'css/style.css', 'js/app.js', 'js/analysis.js', 'js/binance.js',
   'vendor/lightweight-charts.standalone.production.js', 'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png'];
 

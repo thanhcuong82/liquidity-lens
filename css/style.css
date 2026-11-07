@@ -1,4 +1,7 @@
 :root {
+  /* Android app (Capacitor) injects --safe-area-inset-*; browsers provide env() */
+  --sat: max(env(safe-area-inset-top, 0px), var(--safe-area-inset-top, 0px));
+  --sab: max(env(safe-area-inset-bottom, 0px), var(--safe-area-inset-bottom, 0px));
   --bg: #f7f7f5; --panel: #ffffff; --text: #16171a; --muted: #6b6c70; --line: #e4e3de;
   --accent: #534ab7; --up: #1d9e75; --down: #e24b4a; --above: #d85a30; --below: #378add; --swept: #888780;
   --radius: 10px;
@@ -17,9 +20,9 @@ button.ghost { margin-top: 8px; }
 input { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; }
 input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
 
-.top { display: flex; align-items: center; gap: 16px; padding: 10px 16px; padding-top: max(10px, env(safe-area-inset-top)); border-bottom: 1px solid var(--line); background: var(--panel); position: sticky; top: 0; z-index: 5; }
+.top { display: flex; align-items: center; gap: 16px; padding: 10px 16px; padding-top: calc(10px + var(--sat)); border-bottom: 1px solid var(--line); background: var(--panel); position: sticky; top: 0; z-index: 5; }
 .brand { display: flex; align-items: center; gap: 8px; font-weight: 600; white-space: nowrap; }
-.search { display: flex; gap: 8px; flex: 1; max-width: 520px; }
+.search { display: flex; gap: 8px; flex: 1; max-width: 520px; position: relative; }
 .search input { flex: 1; min-width: 0; text-transform: uppercase; }
 .search input::placeholder { text-transform: none; }
 
@@ -90,15 +93,23 @@ details[open].card summary { margin-bottom: 8px; }
 .num { width: 76px; }
 .hint, .disclaimer { font-size: 12px; color: var(--muted); margin: 6px 0 0; }
 
-.toasts { position: fixed; bottom: max(16px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; gap: 8px; z-index: 20; width: min(92vw, 420px); }
+.toasts { position: fixed; bottom: calc(16px + var(--sab)); left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; gap: 8px; z-index: 20; width: min(92vw, 420px); }
 .toast { background: var(--text); color: var(--bg); padding: 10px 14px; border-radius: 10px; font-size: 14px; animation: in .2s ease-out; }
 @keyframes in { from { opacity: 0; transform: translateY(8px); } }
 
 @media (max-width: 900px) {
   .layout { grid-template-columns: minmax(0, 1fr); padding: 8px 10px 24px; }
-  .top { gap: 10px; padding: 8px 10px; }
+  .top { gap: 10px; padding: 8px 10px; padding-top: calc(8px + var(--sat)); }
   .brand span { display: none; }
   .watchlist { padding: 6px 10px; }
   .chart { height: 58vh; min-height: 300px; }
   .price { font-size: 22px; }
 }
+
+.suggest { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; z-index: 30; box-shadow: 0 8px 24px rgba(0,0,0,.18); }
+.suggest button { display: flex; justify-content: space-between; width: 100%; border: 0; border-radius: 0; padding: 11px 14px; text-align: left; }
+.suggest button + button { border-top: 1px solid var(--line); }
+.suggest button:hover, .suggest button.hl { background: color-mix(in srgb, var(--panel) 88%, var(--accent)); }
+.suggest .q { color: var(--muted); font-size: 13px; }
+.layout { padding-bottom: calc(24px + var(--sab)); }
+input[type=search]::-webkit-search-cancel-button { display: none; }

@@ -73,6 +73,21 @@ export function roundLevels(p, each = 2) {
   return out.filter(v => v > 0 && v !== p);
 }
 
+// ---------- zones ----------
+// Merge nearby levels (sorted by price) into zones. A zone never grows wider than 1.5× mergeTol,
+// so a ladder of levels 0.5% apart does not chain into one huge band.
+export function mergeLevels(sorted, mergeTol) {
+  const zones = [];
+  for (const l of sorted) {
+    const z = zones[zones.length - 1];
+    if (z && pct(l.lo, z.hi) <= mergeTol && pct(l.hi, z.lo) <= mergeTol * 1.5) {
+      z.hi = Math.max(z.hi, l.hi); z.lo = Math.min(z.lo, l.lo);
+      z.parts.push(l);
+    } else zones.push({ lo: l.lo, hi: l.hi, parts: [l] });
+  }
+  return zones;
+}
+
 // ---------- structure ----------
 export function structure(swings) {
   const h = swings.highs.slice(-2), l = swings.lows.slice(-2);
@@ -138,14 +153,7 @@ export function analyze(candles, { daily = [], weekly = [], settings = {} } = {}
     .filter(l => pct(mid(l), price) <= s.maxDistance)
     .sort((a, b) => a.lo - b.lo);
 
-  const zones = [];
-  for (const l of cand) {
-    const z = zones[zones.length - 1];
-    if (z && pct(l.lo, z.hi) <= s.mergeTol) {
-      z.hi = Math.max(z.hi, l.hi); z.lo = Math.min(z.lo, l.lo);
-      z.parts.push(l);
-    } else zones.push({ lo: l.lo, hi: l.hi, parts: [l] });
-  }
+  const zones = mergeLevels(cand, s.mergeTol);
   for (const z of zones) {
     // de-duplicate swing parts already represented by an equal group
     const hasEqH = z.parts.some(p => p.kind === 'eqHigh'), hasEqL = z.parts.some(p => p.kind === 'eqLow');
@@ -158,20 +166,22 @@ export function analyze(candles, { daily = [], weekly = [], settings = {} } = {}
     z.onlyRound = z.parts.every(p => p.kind === 'round');
   }
   const meaningful = zones.filter(z => !z.onlyRound || z.distance < 3);
-  const above = meaningful.filter(z => z.side !== 'below').sort((a, b) => a.distance - b.distance).slice(0, s.maxZonesPerSide);
+  const inside = meaningful.filter(z => z.side === 'inside');
+  const above = meaningful.filter(z => z.side === 'above').sort((a, b) => a.distance - b.distance).slice(0, s.maxZonesPerSide);
   const below = meaningful.filter(z => z.side === 'below').sort((a, b) => a.distance - b.distance).slice(0, s.maxZonesPerSide);
 
   events.sort((a, b) => a.at - b.at);
   const recentSweeps = events.filter(e => e.type === 'swept' && e.at >= c.length - 30);
 
   const st = structure(swings);
-  return { price, swings, levels, zones: { above, below }, events, recentSweeps, structure: st, summary: summarize(price, above, below, recentSweeps, st, swings, c) };
+  return { price, swings, levels, zones: { above, below, inside }, events, recentSweeps, structure: st, summary: summarize(price, above, below, recentSweeps, st, swings, c, inside) };
 }
 
 // ---------- plain-language read-out ----------
-function summarize(price, above, below, sweeps, st, swings, c) {
+function summarize(price, above, below, sweeps, st, swings, c, inside = []) {
   const lines = [];
   lines.push(`Cấu trúc: ${st.label}.`);
+  for (const z of inside) if (!z.onlyRound) lines.push(`Giá đang nằm ngay trong vùng ${fmtZone(z)} (${z.labels.join(', ')}).`);
   const strongestUp = pickTarget(above), strongestDown = pickTarget(below);
   if (strongestUp) lines.push(`Thanh khoản phía trên đáng chú ý nhất: ${fmtZone(strongestUp)} (${strongestUp.labels.join(', ')}), cách +${strongestUp.distance.toFixed(2)}%.`);
   if (strongestDown) lines.push(`Thanh khoản phía dưới đáng chú ý nhất: ${fmtZone(strongestDown)} (${strongestDown.labels.join(', ')}), cách −${strongestDown.distance.toFixed(2)}%.`);

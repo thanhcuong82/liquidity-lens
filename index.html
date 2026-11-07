@@ -17,8 +17,8 @@
   <header class="top">
     <div class="brand"><img src="icons/icon.svg" alt="" width="24" height="24"><span>LiquidityLens</span></div>
     <form id="searchForm" class="search" autocomplete="off">
-      <input id="symbolInput" list="symbolList" placeholder="Nhập coin: ZEC, BTC, SOLUSDT…" spellcheck="false" autocapitalize="characters" aria-label="Mã coin">
-      <datalist id="symbolList"></datalist>
+      <input id="symbolInput" type="search" enterkeyhint="go" placeholder="Nhập coin: ZEC, BTC, SOL…" spellcheck="false" autocorrect="off" autocapitalize="characters" aria-label="Mã coin" aria-autocomplete="list" aria-controls="suggest">
+      <div id="suggest" class="suggest" role="listbox" hidden></div>
       <button type="submit" class="primary">Xem</button>
     </form>
   </header>
